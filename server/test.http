@@ -1,0 +1,12 @@
+### Test GET inventory
+GET http://localhost:5000/api/inventory
+
+### Test POST inventory
+POST http://localhost:5000/api/inventory
+Content-Type: application/json
+
+{
+"name": "Orange",
+"stock": 150,
+"price": 1.2
+}

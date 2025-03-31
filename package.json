@@ -1,0 +1,17 @@
+{
+  "name": "sales-inventory-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sales Inventory App",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && node index.js",
+    "client": "cd client && npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "sales-inventory-app": "file:"
+  }
+}

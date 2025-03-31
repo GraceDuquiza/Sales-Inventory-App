@@ -1,0 +1,26 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "add-products": "node run-sql.js ./sql/add-products.sql",
+    "insert-sales": "node run-sql.js ./sql/insert-sales.sql",
+    "delete-items": "node run-sql.js ./sql/delete-items.sql",
+    "update-product": "node run-sql.js ./sql/update-product.sql"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.5.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "pg": "^8.14.1",
+    "prisma": "^6.5.0",
+    "server": "file:"
+  }
+}
