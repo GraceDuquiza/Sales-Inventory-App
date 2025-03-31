@@ -2,7 +2,9 @@ import { useEffect, useState, useContext } from 'react'
 import axios from 'axios'
 import { SaleContext } from '../context/SaleContext.jsx'
 import { Bar } from 'react-chartjs-2'
+import { format } from 'date-fns' // 📅 for formatting dates
 import BestSellingChart from '../charts/bestSellingChart'
+
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -21,11 +23,16 @@ export default function Reports() {
     const [bestSellers, setBestSellers] = useState([])
     const { saleUpdated } = useContext(SaleContext)
 
+    // 🗓 Default to today's date in YYYY-MM-DD
+    const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
+
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true)
             try {
-                const res = await axios.get('/api/reports/weekly')
+                const res = await axios.get('/api/reports/weekly', {
+                    params: { date: selectedDate },
+                })
                 setData(res.data)
             } catch (err) {
                 console.error('❌ Error fetching report:', err)
@@ -36,12 +43,13 @@ export default function Reports() {
         }
 
         fetchData()
-    }, [saleUpdated])
+    }, [saleUpdated, selectedDate])
 
     useEffect(() => {
-        axios.get('/api/analytics/best-selling')
-            .then(res => setBestSellers(res.data))
-            .catch(err => console.error('❌ Error fetching best sellers:', err))
+        axios
+            .get('/api/analytics/best-selling')
+            .then((res) => setBestSellers(res.data))
+            .catch((err) => console.error('❌ Error fetching best sellers:', err))
     }, [saleUpdated])
 
     const chartData = {
@@ -82,10 +90,22 @@ export default function Reports() {
         <div className="max-w-4xl mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">Reports</h1>
 
+            {/* 🗓 Date Picker */}
+            <div className="mb-4">
+                <label htmlFor="date" className="text-sm text-gray-600">Select Date:</label>
+                <input
+                    type="date"
+                    id="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="ml-2 px-2 py-1 border rounded"
+                />
+            </div>
+
             {loading ? (
                 <p>Loading chart...</p>
             ) : data.length === 0 ? (
-                <p>No sales recorded this week.</p>
+                <p>No sales recorded for this week.</p>
             ) : (
                 <Bar data={chartData} options={options} />
             )}

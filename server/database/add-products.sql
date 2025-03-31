@@ -1,3 +1,6 @@
+ALTER TABLE Product
+ADD COLUMN date TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
 INSERT INTO "Product" ("name", "stock", "price")
 VALUES 
 ('pork1 siomai', 10, 50),

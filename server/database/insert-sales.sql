@@ -1,4 +1,9 @@
-INSERT INTO "Sale" ("productId", "quantity", "total", "createdAt")
+-- Add the date column
+ALTER TABLE Sale
+ADD COLUMN date TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- Insert test data
+INSERT INTO Sale (product_id, quantity, total, date)
 VALUES
     (1, 2, 130.00, NOW() - INTERVAL '1 day'),   -- Yesterday
     (2, 1,  65.00, NOW()),                     -- Today
