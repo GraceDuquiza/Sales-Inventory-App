@@ -41,7 +41,48 @@ export const getWeeklySales = async (req, res) => {
     }
     }
 
-    // 🧾 GET: Dashboard Summary (with date filter support)
+    export const getMonthlySales = async (req, res) => {
+            try {
+            const { date } = req.query
+            const selectedDate = date ? new Date(date) : new Date()
+        
+            const year = selectedDate.getFullYear()
+            const month = selectedDate.getMonth()
+        
+            const monthStart = new Date(year, month, 1)
+            const monthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999)
+        
+            const sales = await prisma.sale.findMany({
+                where: {
+                createdAt: {
+                    gte: monthStart,
+                    lte: monthEnd
+                }
+                }
+            })
+        
+            const daysInMonth = new Date(year, month + 1, 0).getDate()
+            const dailyTotals = Array(daysInMonth).fill(0)
+        
+            for (let sale of sales) {
+                const saleDay = new Date(sale.createdAt).getDate() - 1
+                dailyTotals[saleDay] += sale.total
+            }
+        
+            const result = Array.from({ length: daysInMonth }, (_, i) => ({
+                day: i + 1,
+                total: dailyTotals[i]
+            }))
+        
+            res.json(result)
+            } catch (err) {
+            console.error('❌ Error in getMonthlySales:', err)
+            res.status(500).json({ error: 'Failed to fetch monthly sales' })
+            }
+        }
+        
+
+        // 🧾 GET: Dashboard Summary (with date filter support)
     export const getDashboardSummary = async (req, res) => {
     try {
         const { date } = req.query

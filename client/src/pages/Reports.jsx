@@ -1,10 +1,8 @@
 import { useEffect, useState, useContext } from 'react'
 import axios from 'axios'
-import { SaleContext } from '../context/SaleContext.jsx'
+import { format, startOfWeek, addDays, startOfMonth, addMonths } from 'date-fns'
 import { Bar } from 'react-chartjs-2'
-import { format } from 'date-fns' // 📅 for formatting dates
-import BestSellingChart from '../charts/bestSellingChart'
-
+import { SaleContext } from '../context/SaleContext.jsx'
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -13,104 +11,121 @@ import {
     Title,
     Tooltip,
     Legend,
-} from 'chart.js'
+    } from 'chart.js'
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+    ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
-export default function Reports() {
+    export default function Reports() {
+    const { saleUpdated } = useContext(SaleContext)
+    const [view, setView] = useState('weekly') // weekly | monthly
+    const [selectedDate, setSelectedDate] = useState(() =>
+        format(new Date(), 'yyyy-MM-dd')
+    )
     const [data, setData] = useState([])
     const [loading, setLoading] = useState(true)
-    const [bestSellers, setBestSellers] = useState([])
-    const { saleUpdated } = useContext(SaleContext)
-
-    // 🗓 Default to today's date in YYYY-MM-DD
-    const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
 
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true)
-            try {
-                const res = await axios.get('/api/reports/weekly', {
-                    params: { date: selectedDate },
-                })
-                setData(res.data)
-            } catch (err) {
-                console.error('❌ Error fetching report:', err)
-                setData([])
-            } finally {
-                setLoading(false)
-            }
+        const fetchReport = async () => {
+        setLoading(true)
+        try {
+            const res = await axios.get(`/api/reports/${view}`, {
+            params: { date: selectedDate }
+            })
+            setData(res.data)
+        } catch (err) {
+            console.error('❌ Error fetching report:', err)
+            setData([])
+        } finally {
+            setLoading(false)
+        }
         }
 
-        fetchData()
-    }, [saleUpdated, selectedDate])
+        fetchReport()
+    }, [saleUpdated, selectedDate, view])
 
-    useEffect(() => {
-        axios
-            .get('/api/analytics/best-selling')
-            .then((res) => setBestSellers(res.data))
-            .catch((err) => console.error('❌ Error fetching best sellers:', err))
-    }, [saleUpdated])
+    // 🧠 Generate labels with date under each day/month
+    let labels = []
+    if (view === 'weekly') {
+        const start = startOfWeek(new Date(selectedDate), { weekStartsOn: 0 }) // Sunday
+        labels = Array.from({ length: 7 }, (_, i) => {
+        const d = addDays(start, i)
+        return `${format(d, 'EEE')} (${format(d, 'MM/dd')})`
+        })
+    } else {
+        const baseDate = new Date(selectedDate)
+        const monthStart = startOfMonth(baseDate)
+        const daysInMonth = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0).getDate()
+
+        labels = Array.from({ length: daysInMonth }, (_, i) => {
+        const d = addDays(monthStart, i)
+        return format(d, 'MM/dd')
+        })
+    }
 
     const chartData = {
-        labels: Array.isArray(data) ? data.map((d) => d.day) : [],
+        labels,
         datasets: [
-            {
-                label: 'Total Sales (₱)',
-                data: Array.isArray(data) ? data.map((d) => d.total) : [],
-                backgroundColor: 'rgba(59, 130, 246, 0.6)',
-                borderRadius: 8,
-            },
+        {
+            label: 'Total Sales (₱)',
+            data: data.map((d) => d.total),
+            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+            borderRadius: 8,
+        },
         ],
     }
 
     const options = {
         responsive: true,
         plugins: {
-            title: {
-                display: true,
-                text: '📊 Weekly Sales Report',
-                font: { size: 18 },
-            },
-            legend: {
-                display: false,
-            },
+        title: {
+            display: true,
+            text: view === 'weekly' ? '📊 Weekly Sales Report' : '📊 Monthly Sales Report',
+            font: { size: 18 },
+        },
+        legend: { display: false },
         },
         scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: (value) => `₱${value}`,
-                },
+        y: {
+            beginAtZero: true,
+            ticks: {
+            callback: (value) => `₱${value}`,
             },
+        },
         },
     }
 
     return (
         <div className="max-w-4xl mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Reports</h1>
+        <h1 className="text-2xl font-bold mb-4">Reports</h1>
 
-            {/* 🗓 Date Picker */}
-            <div className="mb-4">
-                <label htmlFor="date" className="text-sm text-gray-600">Select Date:</label>
-                <input
-                    type="date"
-                    id="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="ml-2 px-2 py-1 border rounded"
-                />
-            </div>
+        {/* Controls */}
+        <div className="flex items-center gap-4 mb-6">
+            <label className="text-sm">View:</label>
+            <select
+            value={view}
+            onChange={(e) => setView(e.target.value)}
+            className="border rounded px-2 py-1"
+            >
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            </select>
 
-            {loading ? (
-                <p>Loading chart...</p>
-            ) : data.length === 0 ? (
-                <p>No sales recorded for this week.</p>
-            ) : (
-                <Bar data={chartData} options={options} />
-            )}
+            <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="border rounded px-2 py-1"
+            />
+        </div>
 
-            <BestSellingChart bestSellers={bestSellers} />
+        {/* Chart */}
+        {loading ? (
+            <p>Loading chart...</p>
+        ) : data.length === 0 ? (
+            <p>No sales data available for this period.</p>
+        ) : (
+            <Bar data={chartData} options={options} />
+        )}
         </div>
     )
 }
