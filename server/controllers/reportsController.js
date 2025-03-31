@@ -6,22 +6,26 @@ const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
 // 📊 GET: Weekly Sales Report
 export const getWeeklySales = async (req, res) => {
     try {
-        const now = new Date()
-        const startOfWeek = new Date(now)
-        startOfWeek.setDate(now.getDate() - now.getDay()) // Start of current week (Sunday)
+        const { date } = req.query
+        const baseDate = date ? new Date(date) : new Date()
+
+        const startOfWeek = new Date(baseDate)
+        startOfWeek.setDate(baseDate.getDate() - baseDate.getDay()) // Sunday
         startOfWeek.setHours(0, 0, 0, 0)
+
+        const endOfWeek = new Date(startOfWeek)
+        endOfWeek.setDate(endOfWeek.getDate() + 6)
+        endOfWeek.setHours(23, 59, 59, 999)
 
         const sales = await prisma.sale.findMany({
         where: {
             createdAt: {
-            gte: startOfWeek
+            gte: startOfWeek,
+            lte: endOfWeek
             }
         }
         })
 
-        console.log('📦 Sales fetched for weekly report:', sales)
-
-        // 🔢 Group by weekday
         const dailyTotals = Array(7).fill(0)
 
         for (let sale of sales) {
@@ -41,53 +45,51 @@ export const getWeeklySales = async (req, res) => {
     }
     }
 
+    // 📆 GET: Monthly Sales Report
     export const getMonthlySales = async (req, res) => {
-            try {
-            const { date } = req.query
-            const selectedDate = date ? new Date(date) : new Date()
-        
-            const year = selectedDate.getFullYear()
-            const month = selectedDate.getMonth()
-        
-            const monthStart = new Date(year, month, 1)
-            const monthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999)
-        
-            const sales = await prisma.sale.findMany({
-                where: {
-                createdAt: {
-                    gte: monthStart,
-                    lte: monthEnd
-                }
-                }
-            })
-        
-            const daysInMonth = new Date(year, month + 1, 0).getDate()
-            const dailyTotals = Array(daysInMonth).fill(0)
-        
-            for (let sale of sales) {
-                const saleDay = new Date(sale.createdAt).getDate() - 1
-                dailyTotals[saleDay] += sale.total
-            }
-        
-            const result = Array.from({ length: daysInMonth }, (_, i) => ({
-                day: i + 1,
-                total: dailyTotals[i]
-            }))
-        
-            res.json(result)
-            } catch (err) {
-            console.error('❌ Error in getMonthlySales:', err)
-            res.status(500).json({ error: 'Failed to fetch monthly sales' })
+    try {
+        const { date } = req.query
+        const selectedDate = date ? new Date(date) : new Date()
+
+        const year = selectedDate.getFullYear()
+        const month = selectedDate.getMonth()
+
+        const monthStart = new Date(year, month, 1)
+        const monthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999)
+
+        const sales = await prisma.sale.findMany({
+        where: {
+            createdAt: {
+            gte: monthStart,
+            lte: monthEnd
             }
         }
-        
+        })
 
-        // 🧾 GET: Dashboard Summary (with date filter support)
+        const daysInMonth = new Date(year, month + 1, 0).getDate()
+        const dailyTotals = Array(daysInMonth).fill(0)
+
+        for (let sale of sales) {
+        const saleDay = new Date(sale.createdAt).getDate() - 1
+        dailyTotals[saleDay] += sale.total
+        }
+
+        const result = Array.from({ length: daysInMonth }, (_, i) => ({
+        day: i + 1,
+        total: dailyTotals[i]
+        }))
+
+        res.json(result)
+    } catch (err) {
+        console.error('❌ Error in getMonthlySales:', err)
+        res.status(500).json({ error: 'Failed to fetch monthly sales' })
+    }
+    }
+
+    // 🧾 GET: Dashboard Summary with product list
     export const getDashboardSummary = async (req, res) => {
     try {
         const { date } = req.query
-
-        // Fallback to today if no date provided
         const selectedDate = date ? new Date(date) : new Date()
 
         const dayStart = new Date(selectedDate)
@@ -112,22 +114,39 @@ export const getWeeklySales = async (req, res) => {
         const itemsSold = sales.reduce((sum, sale) => sum + sale.quantity, 0)
 
         const productCount = {}
-        sales.forEach(sale => {
-        const { product } = sale
-        const { name } = product
-        productCount[name] = (productCount[name] || 0) + sale.quantity
+        const detailedSales = []
+
+        sales.forEach(({ product, quantity, total }) => {
+        const { name, price } = product
+
+        if (!productCount[name]) {
+            productCount[name] = {
+            name,
+            quantity: 0,
+            price,
+            total: 0
+            }
+        }
+
+        productCount[name].quantity += quantity
+        productCount[name].total += total
         })
 
-        const topProduct = Object.entries(productCount)
-        .sort((a, b) => b[1] - a[1])[0]?.[0] || '—'
+        // Convert object to array
+        for (const entry of Object.values(productCount)) {
+        detailedSales.push(entry)
+        }
+
+        const topProduct = detailedSales.sort((a, b) => b.quantity - a.quantity)[0]?.name || '—'
 
         res.json({
         totalToday,
         itemsSold,
-        topProduct
+        topProduct,
+        detailedSales
         })
     } catch (err) {
         console.error('❌ Dashboard summary error:', err)
         res.status(500).json({ error: 'Failed to load dashboard data' })
     }
-}
+    }

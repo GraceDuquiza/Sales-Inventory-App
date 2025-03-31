@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from 'react'
 import axios from 'axios'
-import { format, startOfWeek, addDays, startOfMonth, addMonths } from 'date-fns'
+import { format, startOfWeek, addDays, startOfMonth} from 'date-fns'
 import { Bar } from 'react-chartjs-2'
 import { SaleContext } from '../context/SaleContext.jsx'
 import {
