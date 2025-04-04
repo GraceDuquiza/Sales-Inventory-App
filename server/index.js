@@ -28,6 +28,8 @@ app.use('/api/sales', salesRoutes)
 app.use('/api/analytics', analyticsRoutes)
 
 
+
+
 app.get('/api/test', (req, res) => {
 res.json({ message: '✅ API is working!' })
 })

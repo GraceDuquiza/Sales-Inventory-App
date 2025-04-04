@@ -38,3 +38,21 @@ const prisma = new PrismaClient()
         res.status(500).json({ error: 'Failed to add product' })
     }
 }
+
+export const removeInventory = async (req, res) => {
+    const { id } = req.params
+
+    try {
+        await prisma.product.update({
+            where: { id: Number(id) },
+            data: {
+                deletedAt: new Date()
+            }
+        })
+
+        res.json({ message: 'Product marked as deleted' })
+    } catch (err) {
+        console.error('❌ Error deleting product:', err)
+        res.status(500).json({ error: 'Failed to delete product' })
+    }
+}

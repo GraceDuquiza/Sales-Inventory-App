@@ -1,7 +1,7 @@
 ### Test GET inventory
 GET http://localhost:5000/api/inventory
 
-### Test POST inventory
+### Test POST inventory Example
 POST http://localhost:5000/api/inventory
 Content-Type: application/json
 

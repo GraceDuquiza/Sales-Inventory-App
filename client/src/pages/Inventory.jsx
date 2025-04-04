@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { fetchInventory, addInventory } from '../services/inventoryService'
+import axios from 'axios' // for delete
+import { Button } from '@/components/ui/button'
 
 export default function Inventory() {
     const [products, setProducts] = useState([])
@@ -11,13 +13,13 @@ export default function Inventory() {
         name: '',
         stock: '',
         price: '',
-        createdAt: format(new Date(), 'yyyy-MM-dd') // Match Prisma field name
+        createdAt: format(new Date(), 'yyyy-MM-dd')
     })
 
     const [submitting, setSubmitting] = useState(false)
 
     useEffect(() => {
-    loadInventory()
+        loadInventory()
     }, [])
 
     const loadInventory = async () => {
@@ -28,7 +30,7 @@ export default function Inventory() {
         setError('Failed to fetch inventory.')
         } finally {
         setLoading(false)
-            }
+        }
     }
 
     const handleChange = (e) => {
@@ -43,7 +45,7 @@ export default function Inventory() {
             name: form.name,
             stock: Number(form.stock),
             price: Number(form.price),
-                createdAt: form.createdAt // This will be passed to Prisma
+            createdAt: form.createdAt
         })
         setForm({
             name: '',
@@ -59,6 +61,17 @@ export default function Inventory() {
         }
     }
 
+    const handleDelete = async (id) => {
+        if (!confirm('Are you sure you want to remove this product?')) return
+        try {
+        await axios.delete(`/api/inventory/${id}`)
+        await loadInventory()
+        } catch (err) {
+        console.error('❌ Failed to delete product:', err)
+        alert('Failed to delete product')
+        }
+    }
+
     return (
         <div className="max-w-4xl mx-auto px-4">
         <h2 className="text-2xl font-bold mb-4">📦 Inventory</h2>
@@ -66,7 +79,7 @@ export default function Inventory() {
         {/* Product Form */}
         <form
             onSubmit={handleSubmit}
-            className="bg-white p-4 rounded-lg shadow mb-6 space-y-4"
+            className="bg-white p-6 rounded-lg shadow mb-6 space-y-4"
         >
             <div className="flex flex-col gap-2">
             <label className="font-semibold">Product Name</label>
@@ -117,13 +130,9 @@ export default function Inventory() {
             />
             </div>
 
-            <button
-            type="submit"
-            disabled={submitting}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
+            <Button type="submit" disabled={submitting}>
             {submitting ? 'Adding...' : 'Add Product'}
-            </button>
+            </Button>
         </form>
 
         {/* Product Table */}
@@ -142,23 +151,34 @@ export default function Inventory() {
                 <th className="p-3">Stock</th>
                 <th className="p-3">Price (₱)</th>
                 <th className="p-3">Date Added</th>
+                <th className="p-3">Action</th>
                 </tr>
             </thead>
             <tbody>
-                {products.map((product, idx) => (
-                <tr key={product.id} className="border-t">
+                {products
+                .filter((product) => !product.deletedAt)
+                .map((product, idx) => (
+                    <tr key={product.id} className="border-t">
                     <td className="p-3">{idx + 1}</td>
                     <td className="p-3">{product.name}</td>
                     <td className="p-3">{product.stock}</td>
                     <td className="p-3">₱{product.price.toFixed(2)}</td>
                     <td className="p-3">
-                    {new Date(product.createdAt).toLocaleDateString()}
+                        {new Date(product.createdAt).toLocaleDateString()}
                     </td>
-                </tr>
+                    <td className="p-3">
+                        <Button
+                        variant="destructive"
+                        onClick={() => handleDelete(product.id)}
+                        >
+                        Delete
+                        </Button>
+                    </td>
+                    </tr>
                 ))}
             </tbody>
             </table>
         )}
         </div>
     )
-}
+    }
