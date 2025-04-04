@@ -46,7 +46,7 @@ export default defineConfig({
     host: true, // 👈 allow LAN access
     port: 5173,
     proxy: {
-      '/api': 'http://localhost:5000',
+      '/api': 'https://sales-inventory-app.onrender.com',
     },
   },
 })

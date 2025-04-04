@@ -3,6 +3,8 @@ import { format } from 'date-fns'
 import { fetchInventory, addInventory } from '../services/inventoryService'
 import { Button } from '@/components/ui/button'
 import { API } from '../services/api'
+import axios from 'axios'
+
 
 export default function Inventory() {
     const [products, setProducts] = useState([])
@@ -66,7 +68,7 @@ export default function Inventory() {
             return
         }
         try {
-        await API.delete(`/inventory/${id}`)
+        await axios.delete(`/inventory/${id}`)
         await loadInventory()
         } catch (err) {
         console.error('❌ Failed to delete product:', err)

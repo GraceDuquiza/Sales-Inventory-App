@@ -5,6 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "add-products": "node run-sql.js ./sql/add-products.sql",
     "insert-sales": "node run-sql.js ./sql/insert-sales.sql",
@@ -22,5 +23,8 @@
     "pg": "^8.14.1",
     "prisma": "^6.5.0",
     "server": "file:"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
   }
 }
