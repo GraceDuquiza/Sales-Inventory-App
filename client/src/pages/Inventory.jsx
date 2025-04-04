@@ -1,22 +1,21 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { fetchInventory, addInventory } from '../services/inventoryService'
-import axios from 'axios' // for delete
 import { Button } from '@/components/ui/button'
+import { API } from '../services/api'
 
 export default function Inventory() {
     const [products, setProducts] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [submitting, setSubmitting] = useState(false)
 
     const [form, setForm] = useState({
         name: '',
         stock: '',
         price: '',
-        createdAt: format(new Date(), 'yyyy-MM-dd')
+        createdAt: format(new Date(), 'yyyy-MM-dd'),
     })
-
-    const [submitting, setSubmitting] = useState(false)
 
     useEffect(() => {
         loadInventory()
@@ -45,13 +44,13 @@ export default function Inventory() {
             name: form.name,
             stock: Number(form.stock),
             price: Number(form.price),
-            createdAt: form.createdAt
+            createdAt: form.createdAt,
         })
         setForm({
             name: '',
             stock: '',
             price: '',
-            createdAt: format(new Date(), 'yyyy-MM-dd')
+            createdAt: format(new Date(), 'yyyy-MM-dd'),
         })
         await loadInventory()
         } catch {
@@ -62,9 +61,12 @@ export default function Inventory() {
     }
 
     const handleDelete = async (id) => {
-        if (!confirm('Are you sure you want to remove this product?')) return
+// sourcery skip: use-braces
+        if (!confirm('Are you sure you want to remove this product?')) {
+            return
+        }
         try {
-        await axios.delete(`/api/inventory/${id}`)
+        await API.delete(`/inventory/${id}`)
         await loadInventory()
         } catch (err) {
         console.error('❌ Failed to delete product:', err)
@@ -181,4 +183,4 @@ export default function Inventory() {
         )}
         </div>
     )
-    }
+}

@@ -1,8 +1,10 @@
 import { useEffect, useState, useContext } from 'react'
-import axios from 'axios'
-import { format, startOfWeek, addDays, startOfMonth} from 'date-fns'
+import { format, startOfWeek, addDays, startOfMonth } from 'date-fns'
 import { Bar } from 'react-chartjs-2'
 import { SaleContext } from '../context/SaleContext.jsx'
+import { API } from '../services/api' // ✅ Custom axios instance
+
+// Chart.js registration
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -11,25 +13,30 @@ import {
     Title,
     Tooltip,
     Legend,
-    } from 'chart.js'
+} from 'chart.js'
 
-    ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
-    export default function Reports() {
+export default function Reports() {
     const { saleUpdated } = useContext(SaleContext)
-    const [view, setView] = useState('weekly') // weekly | monthly
+
+    // 👇 Controls for view type and selected date
+    const [view, setView] = useState('weekly') // 'weekly' or 'monthly'
     const [selectedDate, setSelectedDate] = useState(() =>
         format(new Date(), 'yyyy-MM-dd')
     )
+
+    // 📦 Chart data state
     const [data, setData] = useState([])
     const [loading, setLoading] = useState(true)
 
+    // 🔁 Fetch data when view, date, or new sale happens
     useEffect(() => {
         const fetchReport = async () => {
         setLoading(true)
         try {
-            const res = await axios.get(`/api/reports/${view}`, {
-            params: { date: selectedDate }
+            const res = await API.get(`/reports/${view}`, {
+            params: { date: selectedDate },
             })
             setData(res.data)
         } catch (err) {
@@ -43,8 +50,9 @@ import {
         fetchReport()
     }, [saleUpdated, selectedDate, view])
 
-    // 🧠 Generate labels with date under each day/month
+    // 🧠 Generate X-axis labels for chart (days or dates)
     let labels = []
+
     if (view === 'weekly') {
         const start = startOfWeek(new Date(selectedDate), { weekStartsOn: 0 }) // Sunday
         labels = Array.from({ length: 7 }, (_, i) => {
@@ -54,7 +62,11 @@ import {
     } else {
         const baseDate = new Date(selectedDate)
         const monthStart = startOfMonth(baseDate)
-        const daysInMonth = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0).getDate()
+        const daysInMonth = new Date(
+        baseDate.getFullYear(),
+        baseDate.getMonth() + 1,
+        0
+        ).getDate()
 
         labels = Array.from({ length: daysInMonth }, (_, i) => {
         const d = addDays(monthStart, i)
@@ -62,6 +74,7 @@ import {
         })
     }
 
+    // 📈 Chart.js configuration
     const chartData = {
         labels,
         datasets: [
@@ -96,11 +109,11 @@ import {
 
     return (
         <div className="max-w-4xl mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">Reports</h1>
+        <h1 className="text-2xl font-bold mb-4">📋 Reports</h1>
 
-        {/* Controls */}
-        <div className="flex items-center gap-4 mb-6">
-            <label className="text-sm">View:</label>
+        {/* 🔧 Controls for filtering */}
+        <div className="flex flex-wrap items-center gap-4 mb-6">
+            <label className="text-sm font-medium">View:</label>
             <select
             value={view}
             onChange={(e) => setView(e.target.value)}
@@ -110,6 +123,7 @@ import {
             <option value="monthly">Monthly</option>
             </select>
 
+            <label className="text-sm font-medium">Date:</label>
             <input
             type="date"
             value={selectedDate}
@@ -118,7 +132,7 @@ import {
             />
         </div>
 
-        {/* Chart */}
+        {/* 📈 Chart Output */}
         {loading ? (
             <p>Loading chart...</p>
         ) : data.length === 0 ? (

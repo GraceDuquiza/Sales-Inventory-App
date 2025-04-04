@@ -1,22 +1,35 @@
 import { useEffect, useState, useContext } from 'react'
-import axios from 'axios'
 import { format } from 'date-fns'
 import { SaleContext } from '../context/SaleContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { API } from '../services/api' // ✅ Use centralized API helper
 
 export default function Dashboard() {
     const { saleUpdated } = useContext(SaleContext)
-    const [data, setData] = useState({ totalToday: 0, itemsSold: 0, topProduct: '—', detailedSales: [] })
-    const [loading, setLoading] = useState(true)
-    const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
 
+    // 📦 State for dashboard data and loading
+    const [data, setData] = useState({
+        totalToday: 0,
+        itemsSold: 0,
+        topProduct: '—',
+        detailedSales: [],
+    })
+
+    const [loading, setLoading] = useState(true)
+
+    // 📆 Default selected date is today
+    const [selectedDate, setSelectedDate] = useState(() =>
+        format(new Date(), 'yyyy-MM-dd')
+    )
+
+    // 🔁 Fetch dashboard data on mount or when a new sale is added
     useEffect(() => {
         const fetchDashboard = async () => {
         setLoading(true)
         try {
-            const res = await axios.get('/api/reports/dashboard', {
-            params: { date: selectedDate }
+            const res = await API.get('/reports/dashboard', {
+            params: { date: selectedDate },
             })
             setData(res.data)
         } catch (err) {
@@ -34,7 +47,7 @@ export default function Dashboard() {
         <div className="max-w-5xl mx-auto">
             <h1 className="text-3xl font-bold mb-6">📊 Dashboard</h1>
 
-            {/* Date Picker */}
+            {/* 📆 Date Selector */}
             <div className="mb-6 flex items-center gap-3">
             <label htmlFor="date" className="text-sm font-medium text-gray-700">
                 Select Date:
@@ -48,7 +61,7 @@ export default function Dashboard() {
             />
             </div>
 
-            {/* Summary Cards */}
+            {/* 🔢 Summary Cards */}
             {loading ? (
             <p className="text-gray-600">Loading...</p>
             ) : (
@@ -74,7 +87,7 @@ export default function Dashboard() {
             </div>
             )}
 
-            {/* Products Sold Table */}
+            {/* 📋 Table of Sold Products */}
             {data.detailedSales && data.detailedSales.length > 0 && (
             <div className="bg-white p-4 rounded-lg shadow">
                 <h3 className="text-lg font-semibold mb-4">🧾 Products Sold</h3>
