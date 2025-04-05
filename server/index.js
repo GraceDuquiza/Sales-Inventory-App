@@ -23,9 +23,10 @@ app.use(express.json())
 app.use(cors({
     origin: [
     'http://localhost:5173',
-    'https://your-firebase-site.web.app',
-    'https://your-custom-domain.com'
+    'https://salesinventoryapp-ba0dc.web.app',
+    'https://sales-inventory-app.onrender.com'
 ],
+    methods: ['GET', 'POST', 'DELETE', 'PUT'],
     credentials: true
 }))
 
