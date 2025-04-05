@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
+    "start": "prisma migrate deploy && node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "add-products": "node run-sql.js ./sql/add-products.sql",
     "insert-sales": "node run-sql.js ./sql/insert-sales.sql",
