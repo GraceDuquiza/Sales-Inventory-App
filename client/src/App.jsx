@@ -1,9 +1,6 @@
-import {
-  Routes,
-  Route,
-  Navigate,
-} from 'react-router-dom'
-
+// App.jsx
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
+import ProtectedRoute from './components/ProtectedRoute' // ✅ external version
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Inventory from './pages/Inventory'
@@ -11,24 +8,23 @@ import Sales from './pages/Sales'
 import Reports from './pages/Reports'
 import Layout from './components/Layout'
 
-// ✅ Token-based protected route
-function ProtectedRoute({ children }) {
-  const token = localStorage.getItem('token')
-  return token ? children : <Navigate to="/login" />
-}
 
-// ✅ Layout wrapper for protected pages
+// ✅ Layout wrapper for all protected routes
 function ProtectedLayout() {
-  return <Layout /> // Includes <Outlet />
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
+  )
 }
 
 export default function App() {
   return (
     <Routes>
-      {/* Public */}
+      {/* Public Route */}
       <Route path="/login" element={<Login />} />
 
-      {/* Protected routes */}
+      {/* Protected Routes */}
       <Route
         element={
           <ProtectedRoute>
