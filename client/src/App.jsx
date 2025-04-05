@@ -4,7 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Sales from "./pages/Sales";
 import Inventory from "./pages/Inventory";
 import Reports from "./pages/Reports";
-import PrivateRoute from "./components/PrivateRoute";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -15,33 +15,33 @@ function App() {
         <Route
           path="/"
           element={
-            <PrivateRoute>
+            <ProtectedRoute>
               <Dashboard />
-            </PrivateRoute>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/sales"
           element={
-            <PrivateRoute>
+            <ProtectedRoute>
               <Sales />
-            </PrivateRoute>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/inventory"
           element={
-            <PrivateRoute>
+            <ProtectedRoute>
               <Inventory />
-            </PrivateRoute>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/reports"
           element={
-            <PrivateRoute>
+            <ProtectedRoute>
               <Reports />
-            </PrivateRoute>
+            </ProtectedRoute>
           }
         />
       </Routes>
