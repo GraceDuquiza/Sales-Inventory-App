@@ -28,6 +28,10 @@ export default function Dashboard() {
     // - The selected date changes
     // - A new sale is added (via SaleContext)
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+        window.location.href = '/login'; // or use react-router navigate
+        }
         const fetchDashboard = async () => {
         setLoading(true);
         try {

@@ -9,6 +9,7 @@ import ReportRoutes from './routes/ReportRoutes.js'
 import inventoryRoutes from './routes/inventoryRoutes.js'
 import salesRoutes from './routes/salesRoutes.js'
 import analyticsRoutes from './routes/analyticsRoutes.js'
+import loginRoutes from './routes/loginRoutes.js';
 
 // Load env variables
 dotenv.config()
@@ -29,6 +30,8 @@ app.use(cors({
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     credentials: true
 }))
+app.use('/api/auth', loginRoutes);
+
 
 // API Routes
 app.use('/api/reports', ReportRoutes)
