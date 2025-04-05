@@ -1,22 +1,14 @@
-// components/ProtectedRoute.jsx
-import { useEffect, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate } from "react-router-dom";
 
-export default function ProtectedRoute({ children }) {
-    const [loading, setLoading] = useState(true)
-    const [authenticated, setAuthenticated] = useState(false)
+const PrivateRoute = ({ children }) => {
+    const token = localStorage.getItem("token");
 
-    useEffect(() => {
-        const token = localStorage.getItem('token')
-        setAuthenticated(!!token)
-        setLoading(false)
-    }, [])
-
-
-    if (loading) {
-        return (
-            <p className="p-4">🔒 Checking login...</p>
-        );
+    // If token does not exist, redirect to login
+    if (!token) {
+        return <Navigate to="/login" replace />;
     }
-    return authenticated ? children : <Navigate to="/login" />
-}
+
+    return children;
+};
+
+export default PrivateRoute;

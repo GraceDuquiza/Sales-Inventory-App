@@ -1,45 +1,52 @@
-// App.jsx
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
-import ProtectedRoute from './components/ProtectedRoute' // ✅ external version
-import Login from './pages/Login'
-import Dashboard from './pages/Dashboard'
-import Inventory from './pages/Inventory'
-import Sales from './pages/Sales'
-import Reports from './pages/Reports'
-import Layout from './components/Layout'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Sales from "./pages/Sales";
+import Inventory from "./pages/Inventory";
+import Reports from "./pages/Reports";
+import PrivateRoute from "./components/PrivateRoute";
 
-
-// ✅ Layout wrapper for all protected routes
-function ProtectedLayout() {
+function App() {
   return (
-    <Layout>
-      <Outlet />
-    </Layout>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/sales"
+          element={
+            <PrivateRoute>
+              <Sales />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/inventory"
+          element={
+            <PrivateRoute>
+              <Inventory />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <PrivateRoute>
+              <Reports />
+            </PrivateRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default function App() {
-  return (
-    <Routes>
-      {/* Public Route */}
-      <Route path="/login" element={<Login />} />
-
-      {/* Protected Routes */}
-      <Route
-        element={
-          <ProtectedRoute>
-            <ProtectedLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/inventory" element={<Inventory />} />
-        <Route path="/sales" element={<Sales />} />
-        <Route path="/reports" element={<Reports />} />
-      </Route>
-
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/login" />} />
-    </Routes>
-  )
-}
+export default App;
