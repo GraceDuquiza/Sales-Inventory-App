@@ -1,11 +1,13 @@
-import axios from 'axios'
+// services/inventoryService.js
 
-const API_URL = '/api/inventory'
+import { API } from './api' // ✅ use API that includes token
+
+const API_URL = '/inventory' // ✅ no need to include /api since API already handles baseURL
 
 // 📦 Fetch all inventory products
 export const fetchInventory = async () => {
     try {
-        const response = await axios.get(API_URL)
+        const response = await API.get(API_URL)
         return response.data
     } catch (error) {
         console.error('❌ Error fetching inventory:', error)
@@ -16,18 +18,18 @@ export const fetchInventory = async () => {
     // ➕ Add a new product to inventory
     export const addInventory = async (product) => {
     try {
-        const response = await axios.post(API_URL, product)
+        const response = await API.post(API_URL, product)
         return response.data
     } catch (error) {
         console.error('❌ Error adding product:', error)
         throw error
     }
-}
+    }
 
-// 🗑️ (Optional) Soft-delete a product by ID
-export const deleteInventory = async (id) => {
+    // 🗑️ Soft-delete a product by ID
+    export const deleteInventory = async (id) => {
     try {
-        const response = await axios.delete(`${API_URL}/${id}`)
+        const response = await API.delete(`${API_URL}/${id}`)
         return response.data
     } catch (error) {
         console.error('❌ Error deleting product:', error)
